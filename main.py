@@ -3,8 +3,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import ast
-import gdown
-import os
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="🎬 Advanced Movie Data Analysis", layout="wide")
@@ -12,14 +10,8 @@ st.set_page_config(page_title="🎬 Advanced Movie Data Analysis", layout="wide"
 # --- LOAD DATA ---
 @st.cache_data
 def load_data():
-    file_id = "1Jy78mMsOa7V-Z1Z7HtiWjkKTMpf4FEGZ"  # your Google Drive file ID
-    url = f"https://drive.google.com/uc?id={file_id}"
-
-    # Download only if file does not exist
-    if not os.path.exists("movies_metadata.csv"):
-        gdown.download(url, "movies_metadata.csv", quiet=False)
-
-    df = pd.read_csv("movies_metadata.csv", low_memory=False)
+    url = "https://github.com/anas-aqil-979/Advanced-Movie-Data-Analysis/releases/download/csv/movies_metadata.csv"
+    df = pd.read_csv(url, low_memory=False)
 
     df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
     df['year'] = df['release_date'].dt.year
