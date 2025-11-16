@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import ast
+import gdown
+import os
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="🎬 Advanced Movie Data Analysis", layout="wide")
@@ -10,7 +12,15 @@ st.set_page_config(page_title="🎬 Advanced Movie Data Analysis", layout="wide"
 # --- LOAD DATA ---
 @st.cache_data
 def load_data():
+    file_id = "1Jy78mMsOa7V-Z1Z7HtiWjkKTMpf4FEGZ"  # your Google Drive file ID
+    url = f"https://drive.google.com/uc?id={file_id}"
+
+    # Download only if file does not exist
+    if not os.path.exists("movies_metadata.csv"):
+        gdown.download(url, "movies_metadata.csv", quiet=False)
+
     df = pd.read_csv("movies_metadata.csv", low_memory=False)
+
     df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
     df['year'] = df['release_date'].dt.year
     df['budget'] = pd.to_numeric(df['budget'], errors='coerce')
@@ -27,8 +37,10 @@ def load_data():
         except:
             return []
         return []
+
     df['genres_list'] = df['genres'].apply(parse_genres)
     return df
+
 
 df = load_data()
 
@@ -43,6 +55,7 @@ filtered_df = df[
     (df['year'].between(year_range[0], year_range[1])) &
     (df['vote_count'] >= min_votes)
 ]
+
 if genre_filter:
     filtered_df = filtered_df[filtered_df['genres_list'].apply(lambda x: any(g in x for g in genre_filter))]
 
@@ -92,7 +105,7 @@ avg_rating_per_year = filtered_df.groupby('year')['vote_average'].mean().reset_i
 fig7 = px.line(avg_rating_per_year, x='year', y='vote_average', title="Average Rating Over the Years", markers=True)
 st.plotly_chart(fig7, use_container_width=True)
 
-# --- SECTION 4: CORRELATION AND INSIGHTS ---
+# --- SECTION 4: CORRELATION ---
 st.header("📊 Correlation and Insights")
 corr = filtered_df[['budget', 'revenue', 'vote_average', 'vote_count', 'runtime']].corr()
 fig8 = px.imshow(corr, text_auto=True, title="Correlation Heatmap of Numeric Features")
